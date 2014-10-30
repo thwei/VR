@@ -1749,13 +1749,7 @@ void GLWidget::initializeGL() {
 
 	//sdkCreateTimer(&timer);
 	
-
-<<<<<<< HEAD
    	initPixelBuffer();
 
  
 } 
-=======
-	
-} 
->>>>>>> 753e4caf07173c011cf18914c96a4d147327a09c
