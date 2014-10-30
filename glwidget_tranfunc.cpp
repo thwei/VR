@@ -41,12 +41,21 @@ GLWidget_TranFunc::~GLWidget_TranFunc()
 {
 	if(crv!=NULL)
 		delete crv;
+#ifdef WIN32
 	curv_ver.swap(vector<float> ());
 	ctrl_ver.swap(vector<float> ());
 	temp_ctrp.swap(vector<float> ());
 	CtrlP_color.swap(vector<float> ());
 	temp_color.swap(vector<float> ());
 	temp_alpha.swap(vector<float> ());
+#else
+    curv_ver = vector<float>();
+    ctrl_ver = vector<float> ();
+    temp_ctrp = vector<float> ();
+    CtrlP_color = vector<float> ();
+    temp_color = vector<float> ();
+    temp_alpha = vector<float> ();
+#endif
 	/*
 	if(TransferFunc_alpha!=NULL)
 		delete [] TransferFunc_alpha;

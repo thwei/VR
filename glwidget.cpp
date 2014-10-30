@@ -4,7 +4,9 @@
 #include <vector>
 #include <iostream>
 #include "Vector3.h"
-#include <windows.h>
+#ifdef WIN32
+    #include <windows.h>
+#endif
 //#include "ShaderSetup.h"
 #include <algorithm>
 
@@ -1748,7 +1750,12 @@ void GLWidget::initializeGL() {
 	//sdkCreateTimer(&timer);
 	
 
+<<<<<<< HEAD
    	initPixelBuffer();
 
  
 } 
+=======
+	
+} 
+>>>>>>> 753e4caf07173c011cf18914c96a4d147327a09c
