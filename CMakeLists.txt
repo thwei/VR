@@ -59,6 +59,8 @@ find_package(CUDA QUIET REQUIRED)
 CUDA_ADD_LIBRARY(RenderLib volumeRender_kernel.cu)
 include_directories( ${CUDA_TOOLKIT_ROOT_DIR}/include  ${CUDA_SDK_ROOT_DIR}/common/inc )
 link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib/x64 ${CUDA_SDK_ROOT_DIR}/common/lib/x64 )
+#LINUX:
+link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 
 ########################################################
 
