@@ -8,15 +8,22 @@ extern "C" void init_volume_Cuda(float *h_volume, cudaExtent volumeSize);
 extern "C" void init_normal_Cuda(myvector4 *h_volume, cudaExtent volumeSize);
 extern "C" void freeCudaVolumeBuffers();
 
-
 uint cuda_width = WINDOW_SIZE, cuda_height = WINDOW_SIZE;
-
+QGLFormat glFormat;
 Grid g;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
 	DataDir = "D:/WorkingData";
+
+	qDebug() << "OpenGL Versions Supported: " << QGLFormat::openGLVersionFlags();	
+	glFormat.setVersion( 3, 1 );	    
+    glFormat.setProfile( QGLFormat::CoreProfile ); 
+    glFormat.setSampleBuffers( true );
+	QGLFormat::setDefaultFormat(glFormat);
+
+	init_Grid(g);
 	tr1D = NULL;
 	glw = NULL;
     ui->setupUi(this);
@@ -32,7 +39,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionRead_Data_triggered()
 {
-	QString fn = QFileDialog::getOpenFileName(this, tr("Open File"), DataDir, tr("raw data(*.raw *.dat)")); 
+	QString fn = QFileDialog::getOpenFileName(this, tr("Open File"), DataDir, tr("header(*.nhdr)")); 
 	ui->statusBar->showMessage("");
 	
 	if ( !fn.isEmpty() ) 
@@ -40,6 +47,7 @@ void MainWindow::on_actionRead_Data_triggered()
 		string filename = fn.toStdString();
 		destroy_Grid(g);
 		g.data.volume = read_volume(filename, g);
+
 		ui->statusBar->showMessage("Read Data Property Successfully!");
 	}
 }
@@ -51,7 +59,26 @@ int iDivUpM(int a, int b)
 
 void MainWindow::on_Draw_PushButton_clicked()
 {
-		//initGL();	
+		///////initGL	
+	    if(glw!=NULL)
+			delete glw;
+		glw = new GLWidget(glFormat);
+		glw->resize(WINDOW_SIZE,WINDOW_SIZE);
+
+		int maxdim,mindim;
+
+		maxdim = max(max(g.xdim,g.ydim),g.zdim);		
+		mindim = min(min(g.xdim,g.ydim),g.zdim);
+
+		glw->xdim = g.xdim;
+		glw->ydim = g.ydim;
+		glw->zdim = g.zdim;
+		glw->maxdim = maxdim;
+		glw->mindim = mindim;
+		glw->Reset_View();	
+		
+		glw->stepsize = 0.5*(1.0/(maxdim));
+		//glw->stepsize = glw->stepsize*2
 
 		extern dim3 blockSize;
 		extern dim3 gridSize;
@@ -61,20 +88,17 @@ void MainWindow::on_Draw_PushButton_clicked()
 		tr1D = new Transfer_Func1D();
 		tr1D->glwtrf->glw = glw;
 		tr1D->glwtrf->Init_TransFunc();
+		tr1D->graph_show();
+		tr1D->show();
 
-
-/*		//if(volume_mapper==1) //gpu based
+		////initial CUDA
 		cudaExtent volumeSize = make_cudaExtent(g.data.xdim, g.data.ydim, g.data.zdim);
 		init_volume_Cuda(g.data.volume, volumeSize);
 		gridSize = dim3(iDivUpM(cuda_width, blockSize.x), iDivUpM(cuda_height, blockSize.y));
 
-		//iCuda();
 		glw->updateGL();
 		glw->show();
 
-		QObject::connect(glw, SIGNAL(glw_window_closed()), this, SLOT(Close_Render_Checked()));
-		QObject::connect(tr1D, SIGNAL(tr1D_window_closed()), this, SLOT(Close_TR1D_Checked()));
-		*/
-		//UpdateUi();
+		
 }
 

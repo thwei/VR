@@ -75,13 +75,9 @@ struct Isosurface
 struct Histogram
 {
 	float *pdf;
-	float *isosurf_pdf;
-	float *isosurf_pdf_test;// test
 	int bin_num;
 	float bin_width;
-	float data_min;
-	float data_max;
-	string name;	
+	
 };
 struct Data
 {
@@ -108,7 +104,7 @@ struct VectorData
 	string extension;
 };
 
-struct Distribution
+struct Distribution //histogram on grid
 {
 	float** histogram;
 	GMM* gmm;
@@ -127,15 +123,16 @@ struct Grid
 	int size;
 	float x_space,y_space,z_space;
 
-	float *gradientMag;
-	float *CurvMag;
-	float **Hessian;
-	myvector *gradient;
-	myvector *Min_Curv_Dir;
-	myvector *Max_Curv_Dir;
+	//float *gradientMag;
+	//float *CurvMag;
+	//float **Hessian;
+	//myvector *gradient;
+	//myvector *Min_Curv_Dir;
+	//myvector *Max_Curv_Dir;
 
 	Data data;
-	Distribution distribution;
+	Histogram global_histogram;
+	Distribution distribution; //ignore this
 };
 
 template <class T>

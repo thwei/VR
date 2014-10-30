@@ -2,11 +2,11 @@
 
 #include <vector>
 #include <algorithm>
-//#include <Dense>
+#include "Eigen\Dense"
 #include "utility.h"
 
 using namespace std;
-//using namespace Eigen;
+using namespace Eigen;
 //vector<float> ctrP;
 //vector<float> verlist;
 //vector<float> verlist2;
@@ -27,7 +27,7 @@ vector<float> curve::curve_interp(int num_sol)
 {
 
 	vector<float> solution;
-#if 0
+#if 1
 	int *temp = new int[num_sol];//1,4,1,0
 	temp[num_sol-3]=1;temp[num_sol-2]=4;temp[num_sol-1]=1;
 	for(int i=0;i<num_sol-3;i++)

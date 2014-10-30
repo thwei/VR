@@ -104,7 +104,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	grid_line = false;
 	gmm_render = false;
 	FOV = 60;
-    zoom			= 2;
+    zoom			= 50;
 	gpu_zoom = zoom;
     swing_angle		= 0;
     elevate_angle	= 0;
@@ -180,7 +180,7 @@ GLWidget::~GLWidget()
 	//glDeleteRenderbuffers(1, &renderbuffer );
 
 	//sdkDeleteTimer(&timer);
-#if 0
+#if 1
 	if (pbo)
     {
         cudaGraphicsUnregisterResource(cuda_pbo_resource);
@@ -188,7 +188,7 @@ GLWidget::~GLWidget()
         glDeleteTextures(1, &tex);
     }
 
-	if(volume_mapper==1) 
+//	if(volume_mapper==1) 
 	{
 		freeCudaVolumeBuffers();
 		freeCudaTransferFuncBuffers();
@@ -290,7 +290,7 @@ void GLWidget::Reset_View()
 	half_zdim = zdim*0.5;
 
 	//zoom = maxdim*1.5;
-	zoom = 2;
+	zoom = 5;
 	FOV = 60;
 	xRot = 0;
     yRot = 0;
@@ -310,9 +310,11 @@ void GLWidget::Reset_View()
 	gridScale_Y = (float)ydim/(float)mindim;
 	gridScale_Z = (float)zdim/(float)mindim;
 	*/
+	
 	gridScale_X = (float)xdim/(float)maxdim;
 	gridScale_Y = (float)ydim/(float)maxdim;
 	gridScale_Z = (float)zdim/(float)maxdim;
+	
 	gpu_zoom = zoom;
 
 }
@@ -1182,21 +1184,10 @@ void GLWidget::render()
 
 	cudaExtent volumeSize;
 
-	if(volume_rendering)
-	{
-		volumeSize = make_cudaExtent(g.data.xdim, g.data.ydim, g.data.zdim);
-		minValue = g.data.minvalue;
-		maxValue = g.data.maxvalue;
-	}
-#if 0
-	else
-	{
-		volumeSize = make_cudaExtent(g.data.distrib_xdim, g.data.distrib_ydim, g.data.distrib_zdim);
-		int size = g.data.distrib_xdim*g.data.distrib_ydim*g.data.distrib_zdim;
-		maxValue = *max_element(g.data.iso_likelihood_field,g.data.iso_likelihood_field+size);
-		minValue = *min_element(g.data.iso_likelihood_field,g.data.iso_likelihood_field+size);
-	}
-#endif
+	volumeSize = make_cudaExtent(g.data.xdim, g.data.ydim, g.data.zdim);
+	minValue = g.data.minvalue;
+	maxValue = g.data.maxvalue;
+
 	TransferFunc(TransferFunc_color, num_color, TransferFunc_alpha, num_alpha);
     // call CUDA kernel, writing results to PBO
     render_kernel(gridSize, blockSize, d_output, WINDOW_SIZE, WINDOW_SIZE, 
@@ -1223,7 +1214,7 @@ void GLWidget::paintGL() {
 	//GLfloat modelView[16];
 	//sdkStartTimer(&timer);
 	//printf("zoom:%f\n",zoom);
-	if(volume_mapper == 1)
+	//if(volume_mapper == 1)
 	{
 
 		glMatrixMode(GL_MODELVIEW);
@@ -1283,6 +1274,8 @@ void GLWidget::paintGL() {
 		glDisable(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+#if 0
 	else
 	{
 	//1.gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2]+zoom, look_at_pos[0], look_at_pos[1], look_at_pos[2], 0, 1, 0);
@@ -1478,7 +1471,7 @@ void GLWidget::paintGL() {
 	
 	
 	}
-
+#endif
 	QGLWidget:swapBuffers();
 	
 	//sdkStopTimer(&timer);
@@ -1598,7 +1591,7 @@ void GLWidget::resizeGL(int width, int height) {
     screen_width=width;
 	screen_height=height;	
 	
-	if(volume_mapper == 1)
+	//if(volume_mapper == 1)
 	{
 		initPixelBuffer();
 		// calculate new grid size
@@ -1607,7 +1600,7 @@ void GLWidget::resizeGL(int width, int height) {
 		
 	}
 
-    //glViewport(0, 0, screen_width, screen_height);
+    glViewport(0, 0, screen_width, screen_height);
 	//printf("width:%d\theight:%d\n",width,height);
 	glMatrixMode(GL_MODELVIEW); 
 	glLoadIdentity();
@@ -1615,10 +1608,10 @@ void GLWidget::resizeGL(int width, int height) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 	
-	if(volume_mapper==1)
-		glOrtho(0.0, 1.0, 0.0, 1.0, 0.0, 1.0);
-	else
-		gluPerspective(FOV,((GLfloat)width)/((GLfloat)height),0.2f,10000.0f);
+	//if(volume_mapper==1)
+	glOrtho(0.0, 1, 0.0, 1.0, 0.0, 1.0);
+	//else
+		//gluPerspective(FOV,((GLfloat)width)/((GLfloat)height),0.2f,10000.0f);
 	
 	
        
@@ -1754,21 +1747,8 @@ void GLWidget::initializeGL() {
 
 	//sdkCreateTimer(&timer);
 	
-	switch(volume_mapper)
-	{
-	case 0:
-		Reset_View();
-		//cube_obj = new Cube[1];
-		//Initial_Cube(cube_obj,0);
-   		init();
-		break;
-	case 1:
-   		initPixelBuffer();
-		break;
-	default:
-		break;   
-    }
-	
 
-	
+   	initPixelBuffer();
+
+ 
 } 

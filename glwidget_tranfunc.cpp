@@ -131,7 +131,7 @@ void GLWidget_TranFunc::TnasferF_Alpha_Comp()
 		temp_ctrp = crv->curve_interp((ctrl_ver.size()/2)-2); // get interpolation-used control point
 		crv->ctrP = temp_ctrp;
 		curv_ver = crv->UniCubBSP(false);
-
+		
 		tempv = curv_ver[1]>=0 ? curv_ver[1]:0;
 		tempv = tempv<=1 ? tempv:1;
 		temp_alpha.push_back(tempv);
@@ -146,6 +146,7 @@ void GLWidget_TranFunc::TnasferF_Alpha_Comp()
 				k++;
 			}
 		}
+		
 	}
 	else
 	{
@@ -301,11 +302,13 @@ void GLWidget_TranFunc::Recal_CtrP()
 
 	//glw->hist_gridsize = hist_gridsize;
 
+#if 0
 	if(glw->volume_mapper!=1)
 	{
 		glw->Change_Alpha();
 		glw->Change_Color();
 	}
+#endif
 
 	updateGL();
 	glw->updateGL();

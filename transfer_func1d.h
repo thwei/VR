@@ -54,6 +54,7 @@ private:
 	
 //	Info_Theory *info;
 	float binWidth;
+	int binnumber;
 	void compute_histogram();
 	//void compute_moment(int degree);
 	//void compute_skewkurtosis(int option);

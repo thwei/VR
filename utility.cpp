@@ -483,7 +483,7 @@ void read_GMM(char* fname, Grid &g)  //read volume data
 		g.ydim = g.data.ydim*g.y_space;
 		g.zdim = g.data.zdim*g.z_space;
 		g.size = g.xdim*g.ydim*g.zdim;
-		g.distribution.gmm = new GMM[size];
+
 		int newsize = size*distrib_num*3;
 
 		float* V = new float[newsize];
@@ -771,27 +771,30 @@ float* read_GMM2(char* fname, Grid &g)  //read volume data
 			
 			break;
 		}
-
-		g.distribution.gmm2.mixtured_numer = distrib_num;
 		return V;
 
 }
+
 void init_Grid(Grid &G)
 {
- 
+ /*
 	G.gradientMag = NULL;
 	G.CurvMag = NULL;
 	G.Hessian = NULL;
 	G.gradient = NULL;
 	G.Min_Curv_Dir = NULL;
 	G.Max_Curv_Dir = NULL;
+	*/
 	G.data.volume = NULL;
+	G.global_histogram.pdf = NULL;	
 	G.distribution.histogram = NULL;	
 	G.distribution.gmm = NULL;
 	G.distribution.gmm2.para=NULL;
+
 }
 void destroy_Grid(Grid &G)
 {
+	/*
 	if(G.gradientMag!=NULL)
 		delete [] G.gradientMag;
 	if(G.CurvMag!=NULL)
@@ -803,15 +806,18 @@ void destroy_Grid(Grid &G)
 	if(G.Min_Curv_Dir!=NULL)
 		delete [] G.Min_Curv_Dir;
 	if(G.Max_Curv_Dir!=NULL)
-		delete [] G.Max_Curv_Dir;
-	if(G.data.volume!=NULL)
-		delete [] G.data.volume;
+		delete [] G.Max_Curv_Dir;	
+		*/
 	if(G.distribution.histogram!=NULL)
 		delete [] G.distribution.histogram;
 	if(G.distribution.gmm!=NULL)
 		delete [] G.distribution.gmm;
 	if(G.distribution.gmm2.para)
 		delete [] G.distribution.gmm2.para;
+	if(G.data.volume!=NULL)
+		delete [] G.data.volume;
+	if(G.global_histogram.pdf!=NULL)
+		delete [] G.global_histogram.pdf;
 }
 
 void init_Data(Data &data)

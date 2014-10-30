@@ -10,26 +10,28 @@ Transfer_Func1D::Transfer_Func1D(QWidget *parent) :
 {
 	ui->setupUi(this);	
 
-	ui->binsize_textEdit->setText(QString::number(1));
-	binWidth = 1;
+	binnumber = 256;
+	ui->binsize_textEdit->setText(QString::number(binnumber));
+	
 	hist_exist = false;
 
 	glwtrf = new GLWidget_TranFunc(hist_exist,this);
 
+#if 0
 	if(*data_exist)
 	{
-//		stsi = new Statistical_Signature(g.data.volume,g.data.xdim,g.data.ydim,g.data.zdim);
-//		stsi->binWidth = binWidth;
-//		info = new Info_Theory(g.data.volume,g.data.size); //initial binWidth is 1    
-//		compute_histogram();
+		stsi = new Statistical_Signature(g.data.volume,g.data.xdim,g.data.ydim,g.data.zdim);
+		stsi->binWidth = binWidth;
+		info = new Info_Theory(g.data.volume,g.data.size); //initial binWidth is 1    
+		compute_histogram();
 	}
-
+#endif
 	
 	ui->gridLayout->addWidget(glwtrf, 0, 0, 1, 1);
 	glwtrf->show();
 	
 	//glwtrf->Init_TransFunc(); //compute initial curve
-	QObject::connect(glwtrf, SIGNAL(show_value_changed()), this, SLOT(on_changed_value()));	 
+	//QObject::connect(glwtrf, SIGNAL(show_value_changed()), this, SLOT(on_changed_value()));	 
 	//QObject::connect(this, SIGNAL(scalar_value_item_changed()), glwtrf, SLOT(scalar_value_type_changed())); 
 }
 
@@ -38,19 +40,16 @@ Transfer_Func1D::~Transfer_Func1D()
 	delete glwtrf;
 	
     delete ui;
-	if(*data_exist)
-	{
-//		delete info;
-//		delete stsi;
-	}
 }
 
 void Transfer_Func1D::on_binsize_textEdit_textChanged()
 {
 	QString str;
 	str.append(ui->binsize_textEdit->toPlainText());
-	binWidth = str.toFloat();
+	binnumber = str.toInt();
+	//binWidth = str.toFloat();
 }
+//test
 
 void Transfer_Func1D::graph_show()
 {
