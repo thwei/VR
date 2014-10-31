@@ -24,6 +24,7 @@
 #include <thrust/random/normal_distribution.h>
 #include <thrust/random/linear_congruential_engine.h>
 #include <thrust/random.h>
+//#include "cuda_shader.h"
 
 typedef unsigned int  uint;
 typedef unsigned char uchar;
@@ -111,76 +112,86 @@ __device__ uint rgbaFloatToInt(float4 rgba)
     return (uint(rgba.w*255)<<24) | (uint(rgba.z*255)<<16) | (uint(rgba.y*255)<<8) | uint(rgba.x*255);
 }
 
+struct RenderParam{
+    uint imageW;
+    uint imageH;
+    float density, brightness;
+    float transferOffset;
+    float transferScale;
+    cudaExtent volumeSize;
+    float min_value, max_value,gridScale_X,gridScale_Y, gridScale_Z, tstep;
+    int maxSteps ;
+};
+__constant__ RenderParam c_vrParam;
+
 __global__ void
-d_render(uint *d_output, uint imageW, uint imageH,
-         float density, float brightness,
-         float transferOffset, float transferScale, cudaExtent volumeSize, float min_value, float max_value, 
-		 float gridScale_X, float gridScale_Y, float gridScale_Z, float tstep)
+d_render(uint *d_output)
 {
-    const int maxSteps = 450;
     const float opacityThreshold = 0.99f;
-    const float3 boxMin = make_float3(-1.0*gridScale_X, -1.0*gridScale_Y, -1.0*gridScale_Z);
-    const float3 boxMax = make_float3(1.0*gridScale_X, 1.0*gridScale_Y, 1.0*gridScale_Z);
+    const float3 boxMin = make_float3(-c_vrParam.gridScale_X, -c_vrParam.gridScale_Y, -c_vrParam.gridScale_Z);
+    const float3 boxMax = make_float3(c_vrParam.gridScale_X, c_vrParam.gridScale_Y, c_vrParam.gridScale_Z);
 	//const float3 boxMin = make_float3(-1.0f, -1.0f, -1.0f);
     //const float3 boxMax = make_float3(1.0f, 1.0f, 1.0f);
 
     uint x = blockIdx.x*blockDim.x + threadIdx.x;
     uint y = blockIdx.y*blockDim.y + threadIdx.y;
-    
-	if ((x >= imageW) || (y >= imageH)) 
-		return;
 
-	float W = (float) imageW * gridScale_X;
-	float H = (float) imageH * gridScale_Y;	
+    //float W = (float) imageW * gridScale_X;
+    //float H = (float) imageH * gridScale_Y;
 
-    float u = (x / (float) imageW)*2.0f*gridScale_X-gridScale_X;
-    float v = (y / (float) imageH)*2.0f*gridScale_Y-gridScale_Y;
-	//float u = (x / (float) W)*2.0f-1.0f;
-    //float v = (y / (float) H)*2.0f-1.0f;
-	//float w = (z / (float) imageH)*2.0f-1.0f;
+    if ((x >= c_vrParam.imageW) || (y >= c_vrParam.imageH))
+        return;
 
     // calculate eye ray in world space
     Ray eyeRay;
+    float u = (x / (float) c_vrParam.imageW)*2.0f*c_vrParam.gridScale_X-c_vrParam.gridScale_X;
+    float v = (y / (float) c_vrParam.imageH)*2.0f*c_vrParam.gridScale_Y-c_vrParam.gridScale_Y;
+    //float u = (x / (float) W)*2.0f-1.0f;
+    //float v = (y / (float) H)*2.0f-1.0f;
+    //float w = (z / (float) imageH)*2.0f-1.0f;
+
     eyeRay.o = make_float3(mul(c_invViewMatrix, make_float4(0.0f, 0.0f, 0.0f, 1.0f)));
     eyeRay.d = normalize(make_float3(u, v, -2.0f));
     eyeRay.d = mul(c_invViewMatrix, eyeRay.d);
 
     // find intersection with box
     float tnear, tfar;
-    int hit = intersectBox(eyeRay, boxMin, boxMax, &tnear, &tfar);
-
-    if (!hit) return;
+    {
+        int hit = intersectBox(eyeRay, boxMin, boxMax, &tnear, &tfar);
+        if (!hit) return;
+    }
 
     if (tnear < 0.0f) tnear = 0.0f;     // clamp to near plane
-
     // march along ray from front to back, accumulating color
     float4 sum = make_float4(0.0f);
     float t = tnear;
     float3 pos = eyeRay.o + eyeRay.d*tnear;
-    float3 step = eyeRay.d*tstep;
-	float sample;
-	float value_range = max_value - min_value;
+    float3 step = eyeRay.d*c_vrParam.tstep;
+    float sample;
+    float value_range = c_vrParam.max_value - c_vrParam.min_value;
 	float temp_range = 1.0f/value_range;
 
-    for (int i=0; i<maxSteps; i++)
+    for (int i=0; i<c_vrParam.maxSteps; i++)
     {
         // read from 3D texture
         // remap position to [0, 1] coordinates
         //sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
-		sample = tex3D(tex_volume, (pos.x/(2.0*gridScale_X)+0.5)*(volumeSize.width-1), (pos.y/(2.0*gridScale_Y)+0.5)*(volumeSize.height-1), (pos.z/(2.0*gridScale_Z)+0.5)*(volumeSize.depth-1));
+        sample = tex3D(tex_volume, (pos.x/(2.0*c_vrParam.gridScale_X)+0.5)*(c_vrParam.volumeSize.width-1),
+                       (pos.y/(2.0*c_vrParam.gridScale_Y)+0.5)*(c_vrParam.volumeSize.height-1),
+                       (pos.z/(2.0*c_vrParam.gridScale_Z)+0.5)*(c_vrParam.volumeSize.depth-1));
 		
-        sample = (sample-min_value)*temp_range;    // rmap scale to [0 , 1]
+        sample = (sample-c_vrParam.min_value)*temp_range;    // rmap scale to [0 , 1]
 	
         // lookup in transfer function texture
         
 		//float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
 		
-		float4 col = tex1D(transferTex_color, (sample-transferOffset)*transferScale);
-		float alpha = tex1D(transferTex_alpha, (sample-transferOffset)*transferScale);
-		col.w = alpha;
+        float4 col = tex1D(transferTex_color, (sample-c_vrParam.transferOffset)*c_vrParam.transferScale);
+        float alpha = tex1D(transferTex_alpha, (sample-c_vrParam.transferOffset)*c_vrParam.transferScale);
+        col.w = alpha;
 		
-		col.w *= density;
-		
+        col.w *= c_vrParam.density;
+
         // "under" operator for back-to-front blending
         //sum = lerp(sum, col, col.w);
 
@@ -190,37 +201,39 @@ d_render(uint *d_output, uint imageW, uint imageH,
         col.z *= col.w;
 
         // "over" operator for front-to-back blending
-        sum = sum + col*(1.0f - sum.w);
+        sum += col*(1.0f - sum.w);
 
         // exit early if opaque
         if (sum.w > opacityThreshold)
             break;
 
-        t += tstep;
+        t += c_vrParam.tstep;
 
         if (t > tfar) break;
 
         pos += step;
     }
 
-    sum *= brightness;
+    sum *= c_vrParam.brightness;
 
     // write output color
-    d_output[y*imageW + x] = rgbaFloatToInt(sum);
+    d_output[y*c_vrParam.imageW + x] = rgbaFloatToInt(sum);
+
 }
 __global__ void
 gmm_kernel(thrust::random::uniform_real_distribution<float> dist, thrust::minstd_rand rng, float *gmm_V, float* gmm_P, int xdim, int ydim, int zdim, int distib_num, unsigned int m_seed2)
 {
+#if 0
 	uint x = blockIdx.x*blockDim.x + threadIdx.x;
     uint y = blockIdx.y*blockDim.y + threadIdx.y;
 	uint z = blockIdx.y*blockDim.z + threadIdx.z;
 	uint index = z*xdim*ydim + y*xdim + x;
 
-	float sum,uni_rand,mean,stdev;
-	bool flag=false;
-	int gaussian_index;
+    //float sum,uni_rand,mean,stdev;
+    bool flag=false;
+    int gaussian_index;
 	
-	sum=gmm_P[index+2]; //weighted of first gaussian 
+    sum=gmm_P[index+2]; //weighted of first gaussian
 //	uni_rand = dist(rng);
 /*	
 	for(int j=0;j<distib_num-1;j++)
@@ -246,6 +259,7 @@ gmm_kernel(thrust::random::uniform_real_distribution<float> dist, thrust::minstd
 	thrust::random::experimental::normal_distribution<float> dist2(mean,stdev);
 	gmm_V[index] = dist2(rng2);
 	*/
+#endif
 }
 
 #if 0
@@ -455,9 +469,23 @@ void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, u
 				   cudaExtent volumeSize, float min_value, float max_value, float gridScale_X, float gridScale_Y, float gridScale_Z, float tstep)
 				   
 {
-    d_render<<<gridSize, blockSize>>>(d_output, imageW, imageH, density,
-                                      brightness, transferOffset, transferScale, volumeSize, min_value, max_value,
-									  gridScale_X, gridScale_Y, gridScale_Z, tstep);
+    RenderParam param;
+    param.imageW = imageW;
+    param.imageH = imageH;
+    param.density= density;
+    param.brightness = brightness;
+    param.transferOffset= transferOffset;
+    param.transferScale= transferScale;
+    param.volumeSize=volumeSize;
+    param.min_value=min_value;
+    param.max_value= max_value;
+    param.gridScale_X=gridScale_X;
+    param.gridScale_Y=gridScale_Y;
+    param.gridScale_Z=gridScale_Z;
+    param.tstep=tstep;
+    param.maxSteps = 1000;
+    cudaMemcpyToSymbol(c_vrParam, &param, sizeof(RenderParam));
+    d_render<<<gridSize, blockSize>>>(d_output);
 }
 
 extern "C"
