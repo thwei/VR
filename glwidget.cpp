@@ -1214,6 +1214,7 @@ void GLWidget::render()
 	maxValue = g.data.maxvalue;
 
     TransferFunc(TransferFunc_color, num_color, TransferFunc_alpha, num_alpha);
+
     // call CUDA kernel, writing results to PBO
     render_kernel(gridSize, blockSize, d_output, WINDOW_SIZE, WINDOW_SIZE, 
 		          opacity_density, brightness, transferOffset, transferScale, volumeSize, minValue, maxValue, gridScale_X,gridScale_Y,gridScale_Z,stepsize);
