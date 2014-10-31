@@ -106,7 +106,7 @@ GLWidget::GLWidget(QWidget *parent) :
 	grid_line = false;
 	gmm_render = false;
 	FOV = 60;
-    zoom			= 50;
+    zoom			= 5;
 	gpu_zoom = zoom;
     swing_angle		= 0;
     elevate_angle	= 0;
@@ -292,7 +292,7 @@ void GLWidget::Reset_View()
 	half_zdim = zdim*0.5;
 
 	//zoom = maxdim*1.5;
-	zoom = 5;
+    zoom = 5;
 	FOV = 60;
 	xRot = 0;
     yRot = 0;
@@ -325,9 +325,9 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 {
 	float zoom_delta;
 	if(event->delta()>0)
-		zoom_delta = 0.1;
+        zoom_delta = .1;
 	else if(event->delta())
-		zoom_delta = -0.1;
+        zoom_delta = -.1;
 
     zoom += zoom_delta;
 	gpu_zoom += zoom_delta;
@@ -340,7 +340,7 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 }
 void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-	mousemove = false;
+    mousemove = false;
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
@@ -350,8 +350,23 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
      int dy = event->y() - lastPos.y();
 
      if (event->buttons() & Qt::LeftButton) {
-         setYRotation(yRot + (360 * (float)dy / (float)screen_height));
-         setXRotation(xRot + (360 * (float)dx / (float)screen_width));
+#if 0
+        setYRotation(yRot + (360 * (float)dy / (float)screen_height));
+        setXRotation(xRot + (360 * (float)dx / (float)screen_width));
+        updateGL();
+#else
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        {
+            glLoadIdentity();
+            glRotatef(sqrt(dx*dx+dy*dy), -dy, dx, 0);
+            glMultMatrixf(rotation);
+            glGetFloatv(GL_MODELVIEW_MATRIX, rotation);
+        }glPopMatrix();
+        lastPos = event->pos();
+
+        updateGL();
+#endif
      }
 
      lastPos = event->pos();
@@ -371,15 +386,15 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
      }
  }
 
-static void qNormalizeAngle(int &angle)
+static void qNormalizeAngle(float &angle)
 {
     while (angle < 0)
-        angle += 360 * 16;
-    while (angle > 360 * 16)
-        angle -= 360 * 16;
+        angle += 360;
+    while (angle > 360)
+        angle -= 360;
 }
 
-void GLWidget::setXRotation(int angle)
+void GLWidget::setXRotation(float angle)
 {
     //qNormalizeAngle(angle);
     if (angle != xRot) {
@@ -389,7 +404,7 @@ void GLWidget::setXRotation(int angle)
     }
 }
 
-void GLWidget::setYRotation(int angle)
+void GLWidget::setYRotation(float angle)
 {
    // qNormalizeAngle(angle);
     if (angle != yRot) {
@@ -404,7 +419,7 @@ void GLWidget::setYRotation(int angle)
     }
 }
 
-void GLWidget::setZRotation(int angle)
+void GLWidget::setZRotation(float angle)
 {
     qNormalizeAngle(angle);
     if (angle != zRot) {
@@ -482,6 +497,14 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 			if(lighting)
 				color_option = !color_option;
 			break;
+
+        case '=': case '+':
+            opacity_density *= 1.1;
+            break;
+
+        case '-':
+            opacity_density *= 0.9;
+            break;
 			
     }
 	//printf("FOV:%f\n",FOV);
@@ -1190,7 +1213,8 @@ void GLWidget::render()
 	minValue = g.data.minvalue;
 	maxValue = g.data.maxvalue;
 
-	TransferFunc(TransferFunc_color, num_color, TransferFunc_alpha, num_alpha);
+    TransferFunc(TransferFunc_color, num_color, TransferFunc_alpha, num_alpha);
+
     // call CUDA kernel, writing results to PBO
     render_kernel(gridSize, blockSize, d_output, WINDOW_SIZE, WINDOW_SIZE, 
 		          opacity_density, brightness, transferOffset, transferScale, volumeSize, minValue, maxValue, gridScale_X,gridScale_Y,gridScale_Z,stepsize);
@@ -1200,15 +1224,58 @@ void GLWidget::render()
     checkCudaErrors(cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0));
 }
 
+void GLWidget::draw_box(float xdim, float ydim, float zdim)
+{
+    float half_xdim = xdim*.5f,
+            half_ydim = ydim*.5f,
+            half_zdim = zdim*.5f;
+    glLineWidth(1);
+    glColor4f(1,1.0,1.0,1.0f);
+
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-half_xdim,-half_ydim,half_zdim);
+    glVertex3f(half_xdim,-half_ydim,half_zdim);
+    glVertex3f(half_xdim,half_ydim,half_zdim);
+    glVertex3f(-half_xdim,half_ydim,half_zdim);
+    glEnd();
+
+    glBegin(GL_LINE_LOOP);
+    glVertex3f(-half_xdim,-half_ydim,-half_zdim);
+    glVertex3f(half_xdim,-half_ydim,-half_zdim);
+    glVertex3f(half_xdim,half_ydim,-half_zdim);
+    glVertex3f(-half_xdim,half_ydim,-half_zdim);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(-half_xdim,-half_ydim,half_zdim);
+    glVertex3f(-half_xdim,-half_ydim,-half_zdim);
+
+    glVertex3f(half_xdim,-half_ydim,half_zdim);
+    glVertex3f(half_xdim,-half_ydim,-half_zdim);
+
+    glVertex3f(half_xdim,half_ydim,half_zdim);
+    glVertex3f(half_xdim,half_ydim,-half_zdim);
+
+    glVertex3f(-half_xdim,half_ydim,half_zdim);
+    glVertex3f(-half_xdim,half_ydim,-half_zdim);
+    glEnd();
+}
+
 void GLWidget::paintGL() {    
 
 	//printf("%d\n",fpsLimit);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
     //glDepthFunc(GL_LEQUAL);
-	glMatrixMode(GL_MODELVIEW); 
-	glLoadIdentity();
-    //gluLookAt(0, 0, zoom, 0, 0, 0, 0, 1, 0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0, 0, -zoom, 0, 0, 0, 0, 1, 0);
+    printf("zoom: %f\n", zoom);
+    //glTranslatef(tx, ty, tz);
+    glMultMatrixf(rotation);
+    glScalef(scale, scale, scale);
+
 	//
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
     glEnable ( GL_COLOR_MATERIAL );
@@ -1217,64 +1284,103 @@ void GLWidget::paintGL() {
 	//sdkStartTimer(&timer);
 	//printf("zoom:%f\n",zoom);
 	//if(volume_mapper == 1)
-	{
+    draw_box(.5,.5,.5);
+    {
 
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-		glRotatef(-yRot, 1, 0, 0);
-		glRotatef(-xRot, 0, 1, 0);
-		glTranslatef(0, 0, gpu_zoom);
-		//printf("xRot:%d\tyRot:%d\n",xRot,yRot);
-		glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
-		glPopMatrix();
+        //glPopMatrix();
 
-		invViewMatrix[0] = modelView[0];
-		invViewMatrix[1] = modelView[4];
-		invViewMatrix[2] = modelView[8];
-		invViewMatrix[3] = modelView[12];
-		invViewMatrix[4] = modelView[1];
-		invViewMatrix[5] = modelView[5];
-		invViewMatrix[6] = modelView[9];
-		invViewMatrix[7] = modelView[13];
-		invViewMatrix[8] = modelView[2];
-		invViewMatrix[9] = modelView[6];
-		invViewMatrix[10] = modelView[10];
-		invViewMatrix[11] = modelView[14];
+#if 1
+        glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
+#if 0
+        invViewMatrix[0] = modelView[0];
+        invViewMatrix[1] = modelView[4];
+        invViewMatrix[2] = modelView[8];
+        invViewMatrix[3] = modelView[12];
+        invViewMatrix[4] = modelView[1];
+        invViewMatrix[5] = modelView[5];
+        invViewMatrix[6] = modelView[9];
+        invViewMatrix[7] = modelView[13];
+        invViewMatrix[8] = modelView[2];
+        invViewMatrix[9] = modelView[6];
+        invViewMatrix[10] = modelView[10];
+        invViewMatrix[11] = modelView[14];
+        invViewMatrix[12] = modelView[3];
+        invViewMatrix[13] = modelView[7];
+        invViewMatrix[14] = modelView[11];
+        invViewMatrix[15] = modelView[15];
+#else
+        // transpose
+        float tm[16];
+        tm[0] = modelView[0];
+        tm[1] = modelView[4];
+        tm[2] = modelView[8];
+        tm[3] = modelView[12];
+        tm[4] = modelView[1];
+        tm[5] = modelView[5];
+        tm[6] = modelView[9];
+        tm[7] = modelView[13];
+        tm[8] = modelView[2];
+        tm[9] = modelView[6];
+        tm[10] = modelView[10];
+        tm[11] = modelView[14];
+        tm[12] = modelView[3];
+        tm[13] = modelView[7];
+        tm[14] = modelView[11];
+        tm[15] = modelView[15];
+        InvertMatrix(tm, invViewMatrix);
+#endif
 
-		render();
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadIdentity();
 
-		// display results
-		glClear(GL_COLOR_BUFFER_BIT);
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0, 1, 0, 1, 0, 1);
 
-		// draw image from PBO
-		glDisable(GL_DEPTH_TEST);
+        render();
 
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		// draw using texture
+        // display results
+        glClear(GL_COLOR_BUFFER_BIT);
 
-		// copy from pbo to texture
-		glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WINDOW_SIZE, WINDOW_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+        // draw image from PBO
+        glDisable(GL_DEPTH_TEST);
 
-		// draw textured quad
-		//glTranslatef(0.5-(float)xdim/((float)maxdim*2.0),0.5-(float)ydim/((float)maxdim*2.0),0);
-		glEnable(GL_TEXTURE_2D);
-		glBegin(GL_QUADS);
-		glTexCoord2f(0, 0);
-		glVertex2f(0, 0);
-		glTexCoord2f(1, 0);
-		glVertex2f(1, 0);
-		glTexCoord2f(1, 1);
-		glVertex2f(1, 1);
-		glTexCoord2f(0, 1);
-		glVertex2f(0, 1);
-		glEnd();
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        // draw using texture
 
-		glDisable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
+        // copy from pbo to texture
+        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WINDOW_SIZE, WINDOW_SIZE, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+        // draw textured quad
+        //glTranslatef(0.5-(float)xdim/((float)maxdim*2.0),0.5-(float)ydim/((float)maxdim*2.0),0);
+        glEnable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(0, 0);
+        glTexCoord2f(1, 0);
+        glVertex2f(1, 0);
+        glTexCoord2f(1, 1);
+        glVertex2f(1, 1);
+        glTexCoord2f(0, 1);
+        glVertex2f(0, 1);
+        glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // recall matrix
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+
+
+#endif
 	}
 
 #if 0
@@ -1483,9 +1589,10 @@ void GLWidget::paintGL() {
 }
 void GLWidget::init()
 {
+#if 0
 	glEnable(GL_CULL_FACE);
 	glClearColor(0.0, 0.0, 0.0, 0);	
-#if 0	
+
 	programObject = SetupGLSL("raycasting_shader");
 	create_volumetexture();
 	//// use for FrameBuffer
@@ -1597,21 +1704,28 @@ void GLWidget::resizeGL(int width, int height) {
 	{
 		initPixelBuffer();
 		// calculate new grid size
-		gridSize = dim3(iDivUp(screen_width, blockSize.x), iDivUp(screen_height, blockSize.y));
-
-		
+		gridSize = dim3(iDivUp(screen_width, blockSize.x), iDivUp(screen_height, blockSize.y));	
 	}
 
     glViewport(0, 0, screen_width, screen_height);
-	//printf("width:%d\theight:%d\n",width,height);
-	glMatrixMode(GL_MODELVIEW); 
-	glLoadIdentity();
+
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+    gluPerspective(FOV,((GLfloat)screen_width)/((GLfloat)screen_height),0.2f,1000.0f);
+
+    glMatrixMode(GL_MODELVIEW);
+
+
+	//printf("width:%d\theight:%d\n",width,height);
+    //glMatrixMode(GL_MODELVIEW);
+    //glLoadIdentity();
+
+    //glMatrixMode(GL_PROJECTION);
+    //glLoadIdentity();
 	
 	//if(volume_mapper==1)
-	glOrtho(0.0, 1, 0.0, 1.0, 0.0, 1.0);
+    //glOrtho(0.0, 1, 0.0, 1.0, 0.0, 1.0);
 	//else
 		//gluPerspective(FOV,((GLfloat)width)/((GLfloat)height),0.2f,10000.0f);
 	
@@ -1730,9 +1844,7 @@ void GLWidget::initializeGL() {
 
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
-	
-	glMatrixMode(GL_PROJECTION); 
-	glLoadIdentity(); 
+
 	glEnable(GL_LIGHT0);
 	if(lighting)
 	{
@@ -1748,7 +1860,9 @@ void GLWidget::initializeGL() {
 	}
 
 	//sdkCreateTimer(&timer);
-	
+
+
+
    	initPixelBuffer();
 
  

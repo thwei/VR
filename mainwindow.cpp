@@ -27,6 +27,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	tr1D = NULL;
 	glw = NULL;
     ui->setupUi(this);
+#if 1
+    g.data.volume = read_volume("/data/flow/plume.nhdr", g);
+    ui->statusBar->showMessage("Read Data Property Successfully!");
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -77,7 +81,7 @@ void MainWindow::on_Draw_PushButton_clicked()
 		glw->mindim = mindim;
 		glw->Reset_View();	
 		
-		glw->stepsize = 0.5*(1.0/(maxdim));
+        glw->stepsize = (1.0/(maxdim));
 		//glw->stepsize = glw->stepsize*2
 
 		extern dim3 blockSize;

@@ -54,7 +54,7 @@ include(${QT_USE_FILE})
 ########################################################
 # CUDA
 ########################################################
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3 -gencode arch=compute_22,code=sm_22)
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-O3 -gencode arch=compute_30,code=sm_30 -Xptxas -v)
 find_package(CUDA QUIET REQUIRED)
 CUDA_ADD_LIBRARY(RenderLib volumeRender_kernel.cu)
 include_directories( ${CUDA_TOOLKIT_ROOT_DIR}/include  ${CUDA_SDK_ROOT_DIR}/common/inc )

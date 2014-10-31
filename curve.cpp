@@ -2,7 +2,11 @@
 
 #include <vector>
 #include <algorithm>
-#include "Eigen\Dense"
+#ifdef WIN32
+    #include "Eigen\Dense"
+#else
+    #include "Eigen/Dense"
+#endif
 #include "utility.h"
 
 using namespace std;
