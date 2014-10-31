@@ -169,6 +169,17 @@ GLWidget::GLWidget(QWidget *parent) :
 	mousemove = false;
 	QObject::startTimer(500); 
 	lighting = 0;
+
+	memset(rotation,0,sizeof(int)*16);
+	rotation[0] = 1;
+	rotation[5] = 1;
+	rotation[10] = 1;
+	rotation[15] = 1;
+	scale = 1;
+	tx=0;
+	ty=0;
+	tz=0;
+
 	//CV = new computer_vision();
 	//gmm_output = fopen("gmm__random_number.raw","wb");
 	//gmm_count = 0;
@@ -359,7 +370,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
         glPushMatrix();
         {
             glLoadIdentity();
-            glRotatef(sqrt(dx*dx+dy*dy), -dy, dx, 0);
+            glRotatef(sqrt(float(dx*dx+dy*dy)), -dy, dx, 0);
             glMultMatrixf(rotation);
             glGetFloatv(GL_MODELVIEW_MATRIX, rotation);
         }glPopMatrix();

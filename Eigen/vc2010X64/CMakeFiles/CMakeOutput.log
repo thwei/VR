@@ -1,0 +1,137 @@
+The system is: Windows - 6.1 - x86
+Determining if the C compiler works passed with the following output:
+Change Dir: G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\PROGRA~2\MICROS~2.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec1823013332
+
+Microsoft (R) Visual Studio Version 10.0.40219.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec1823013332, Configuration: Debug x64 ------
+1>Build started 5/15/2013 1:48:24 PM.
+1>PrepareForBuild:
+1>  Creating directory "G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\".
+1>InitializeBuildStatus:
+1>  Creating "cmTryCompileExec1823013332.dir\Debug\cmTryCompileExec1823013332.unsuccessfulbuild" because "AlwaysCreate" was specified.
+1>ClCompile:
+1>  Microsoft (R) C/C++ Optimizing Compiler Version 16.00.40219.01 for x64
+1>  Copyright (C) Microsoft Corporation.  All rights reserved.
+1>  
+1>  cl /c /Zi /W3 /WX- /Od /Ob0 /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1823013332.dir\Debug\\" /Fd"G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1823013332.pdb" /Gd /TC /errorReport:prompt testCCompiler.c  /Zm1000 
+1>  
+1>  testCCompiler.c
+1>Link:
+1>  cmTryCompileExec1823013332.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1823013332.exe
+1>LinkEmbedManifest:
+1>  cmTryCompileExec1823013332.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1823013332.exe
+1>FinalizeBuildStatus:
+1>  Deleting file "cmTryCompileExec1823013332.dir\Debug\cmTryCompileExec1823013332.unsuccessfulbuild".
+1>  Touching "cmTryCompileExec1823013332.dir\Debug\cmTryCompileExec1823013332.lastbuildstate".
+1>
+1>Build succeeded.
+1>
+1>Time Elapsed 00:00:06.96
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\PROGRA~2\MICROS~2.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec1033250227
+
+Microsoft (R) Visual Studio Version 10.0.40219.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec1033250227, Configuration: Debug x64 ------
+1>Build started 5/15/2013 1:48:37 PM.
+1>PrepareForBuild:
+1>  Creating directory "G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\".
+1>InitializeBuildStatus:
+1>  Creating "cmTryCompileExec1033250227.dir\Debug\cmTryCompileExec1033250227.unsuccessfulbuild" because "AlwaysCreate" was specified.
+1>ClCompile:
+1>  Microsoft (R) C/C++ Optimizing Compiler Version 16.00.40219.01 for x64
+1>  Copyright (C) Microsoft Corporation.  All rights reserved.
+1>  
+1>  cl /c /Zi /W3 /WX- /Od /Ob0 /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1033250227.dir\Debug\\" /Fd"G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1033250227.pdb" /Gd /TC /errorReport:prompt "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompilerABI.c"  /Zm1000 
+1>  
+1>  CMakeCCompilerABI.c
+1>Link:
+1>  cmTryCompileExec1033250227.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1033250227.exe
+1>LinkEmbedManifest:
+1>  cmTryCompileExec1033250227.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1033250227.exe
+1>FinalizeBuildStatus:
+1>  Deleting file "cmTryCompileExec1033250227.dir\Debug\cmTryCompileExec1033250227.unsuccessfulbuild".
+1>  Touching "cmTryCompileExec1033250227.dir\Debug\cmTryCompileExec1033250227.lastbuildstate".
+1>
+1>Build succeeded.
+1>
+1>Time Elapsed 00:00:02.18
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\PROGRA~2\MICROS~2.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec2501236712
+
+Microsoft (R) Visual Studio Version 10.0.40219.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec2501236712, Configuration: Debug x64 ------
+1>Build started 5/15/2013 1:48:43 PM.
+1>PrepareForBuild:
+1>  Creating directory "G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\".
+1>InitializeBuildStatus:
+1>  Creating "cmTryCompileExec2501236712.dir\Debug\cmTryCompileExec2501236712.unsuccessfulbuild" because "AlwaysCreate" was specified.
+1>ClCompile:
+1>  Microsoft (R) C/C++ Optimizing Compiler Version 16.00.40219.01 for x64
+1>  Copyright (C) Microsoft Corporation.  All rights reserved.
+1>  
+1>  cl /c /Zi /W3 /WX- /Od /Ob0 /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"cmTryCompileExec2501236712.dir\Debug\\" /Fd"G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2501236712.pdb" /Gd /TP /errorReport:prompt testCXXCompiler.cxx  /Zm1000 
+1>  
+1>  testCXXCompiler.cxx
+1>Link:
+1>  cmTryCompileExec2501236712.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2501236712.exe
+1>LinkEmbedManifest:
+1>  cmTryCompileExec2501236712.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2501236712.exe
+1>FinalizeBuildStatus:
+1>  Deleting file "cmTryCompileExec2501236712.dir\Debug\cmTryCompileExec2501236712.unsuccessfulbuild".
+1>  Touching "cmTryCompileExec2501236712.dir\Debug\cmTryCompileExec2501236712.lastbuildstate".
+1>
+1>Build succeeded.
+1>
+1>Time Elapsed 00:00:02.03
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\PROGRA~2\MICROS~2.0\Common7\IDE\devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTryCompileExec4119311841
+
+Microsoft (R) Visual Studio Version 10.0.40219.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec4119311841, Configuration: Debug x64 ------
+1>Build started 5/15/2013 1:48:50 PM.
+1>PrepareForBuild:
+1>  Creating directory "G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\".
+1>InitializeBuildStatus:
+1>  Creating "cmTryCompileExec4119311841.dir\Debug\cmTryCompileExec4119311841.unsuccessfulbuild" because "AlwaysCreate" was specified.
+1>ClCompile:
+1>  Microsoft (R) C/C++ Optimizing Compiler Version 16.00.40219.01 for x64
+1>  Copyright (C) Microsoft Corporation.  All rights reserved.
+1>  
+1>  cl /c /Zi /W3 /WX- /Od /Ob0 /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"cmTryCompileExec4119311841.dir\Debug\\" /Fd"G:/Program_Code/others_tools/eigen-eigen-2249f9c22fe8/eigen-eigen-2249f9c22fe8/Eigen/vc2010X64/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec4119311841.pdb" /Gd /TP /errorReport:prompt "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCXXCompilerABI.cpp"  /Zm1000 
+1>  
+1>  CMakeCXXCompilerABI.cpp
+1>Link:
+1>  cmTryCompileExec4119311841.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec4119311841.exe
+1>LinkEmbedManifest:
+1>  cmTryCompileExec4119311841.vcxproj -> G:\Program_Code\others_tools\eigen-eigen-2249f9c22fe8\eigen-eigen-2249f9c22fe8\Eigen\vc2010X64\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec4119311841.exe
+1>FinalizeBuildStatus:
+1>  Deleting file "cmTryCompileExec4119311841.dir\Debug\cmTryCompileExec4119311841.unsuccessfulbuild".
+1>  Touching "cmTryCompileExec4119311841.dir\Debug\cmTryCompileExec4119311841.lastbuildstate".
+1>
+1>Build succeeded.
+1>
+1>Time Elapsed 00:00:02.08
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+

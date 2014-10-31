@@ -130,9 +130,9 @@ private:
      float xRot;
      float yRot;
      float zRot;
-     float scale = 1;
-     float rotation[16]={1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
-     float tx=0,ty=0,tz=0;
+     float scale;
+     float rotation[16];
+     float tx,ty,tz;
 
 	 int fpsCount;
 	 int fpsLimit;
