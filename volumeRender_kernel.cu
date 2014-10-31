@@ -24,6 +24,7 @@
 #include <thrust/random/normal_distribution.h>
 #include <thrust/random/linear_congruential_engine.h>
 #include <thrust/random.h>
+//#include "cuda_shader.h"
 
 typedef unsigned int  uint;
 typedef unsigned char uchar;
@@ -119,8 +120,8 @@ d_render(uint *d_output, uint imageW, uint imageH,
 {
     const int maxSteps = 450;
     const float opacityThreshold = 0.99f;
-    const float3 boxMin = make_float3(-1.0*gridScale_X, -1.0*gridScale_Y, -1.0*gridScale_Z);
-    const float3 boxMax = make_float3(1.0*gridScale_X, 1.0*gridScale_Y, 1.0*gridScale_Z);
+    const float3 boxMin = make_float3(-gridScale_X, -gridScale_Y, -gridScale_Z);
+    const float3 boxMax = make_float3(gridScale_X, gridScale_Y, gridScale_Z);
 	//const float3 boxMin = make_float3(-1.0f, -1.0f, -1.0f);
     //const float3 boxMax = make_float3(1.0f, 1.0f, 1.0f);
 
@@ -177,10 +178,10 @@ d_render(uint *d_output, uint imageW, uint imageH,
 		
 		float4 col = tex1D(transferTex_color, (sample-transferOffset)*transferScale);
 		float alpha = tex1D(transferTex_alpha, (sample-transferOffset)*transferScale);
-		col.w = alpha;
+        col.w = alpha;
 		
 		col.w *= density;
-		
+
         // "under" operator for back-to-front blending
         //sum = lerp(sum, col, col.w);
 
@@ -190,7 +191,7 @@ d_render(uint *d_output, uint imageW, uint imageH,
         col.z *= col.w;
 
         // "over" operator for front-to-back blending
-        sum = sum + col*(1.0f - sum.w);
+        sum += col*(1.0f - sum.w);
 
         // exit early if opaque
         if (sum.w > opacityThreshold)
