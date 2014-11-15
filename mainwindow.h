@@ -24,6 +24,8 @@ private slots:
 
     void on_Draw_PushButton_clicked();
 
+    void on_actionDistRead_Data_triggered();
+
 private:
     Ui::MainWindow *ui;
 	QString DataDir;

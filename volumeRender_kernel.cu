@@ -30,6 +30,7 @@ typedef unsigned int  uint;
 typedef unsigned char uchar;
 
 cudaArray *d_volumeArray = 0;
+cudaArray *d_visArray = 0;
 cudaArray *d_normalArray = 0;
 cudaArray *d_transferFuncArray1;
 cudaArray *d_transferFuncArray2;
@@ -40,6 +41,7 @@ typedef unsigned char VolumeType;
 
 //texture<VolumeType, 3, cudaReadModeNormalizedFloat> tex;         // 3D texture
 texture<float, 3, cudaReadModeElementType> tex_volume;         // 3D texture
+texture<float, 3, cudaReadModeElementType> tex_vis;         // 3D texture
 texture<float, 3, cudaReadModeElementType> tex_normal;         // 3D texture
 texture<float4, 1, cudaReadModeElementType>         transferTex; // 1D transfer function texture
 texture<float4, 1, cudaReadModeElementType>         transferTex_color; // 1D transfer function texture
@@ -121,6 +123,7 @@ struct RenderParam{
     cudaExtent volumeSize;
     float min_value, max_value,gridScale_X,gridScale_Y, gridScale_Z, tstep;
     int maxSteps ;
+    char visibilityOn;
 };
 __constant__ RenderParam c_vrParam;
 
@@ -176,18 +179,33 @@ d_render(uint *d_output)
         // read from 3D texture
         // remap position to [0, 1] coordinates
         //sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
-        sample = tex3D(tex_volume, (pos.x/(2.0*c_vrParam.gridScale_X)+0.5)*(c_vrParam.volumeSize.width-1),
-                       (pos.y/(2.0*c_vrParam.gridScale_Y)+0.5)*(c_vrParam.volumeSize.height-1),
-                       (pos.z/(2.0*c_vrParam.gridScale_Z)+0.5)*(c_vrParam.volumeSize.depth-1));
+        float x = (pos.x/(2.0*c_vrParam.gridScale_X)+0.5)*(c_vrParam.volumeSize.width-1);
+        float y = (pos.y/(2.0*c_vrParam.gridScale_Y)+0.5)*(c_vrParam.volumeSize.height-1);
+        float z = (pos.z/(2.0*c_vrParam.gridScale_Z)+0.5)*(c_vrParam.volumeSize.depth-1);
+        sample = tex3D(tex_volume, x, y, z);
 		
         sample = (sample-c_vrParam.min_value)*temp_range;    // rmap scale to [0 , 1]
+        sample = (sample-c_vrParam.transferOffset)*c_vrParam.transferScale;
 	
         // lookup in transfer function texture
         
 		//float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
-		
-        float4 col = tex1D(transferTex_color, (sample-c_vrParam.transferOffset)*c_vrParam.transferScale);
-        float alpha = tex1D(transferTex_alpha, (sample-c_vrParam.transferOffset)*c_vrParam.transferScale);
+
+        float4 col = tex1D(transferTex_color, sample);
+        float alpha = tex1D(transferTex_alpha, sample);
+
+        if (c_vrParam.visibilityOn) {
+            float visible = tex3D(tex_vis, x, y, z);
+            //alpha = visible;
+            if (visible == 0) {
+                float m = (col.x+col.y+col.z)/3.f;  // lightness
+                col.x = col.y = col.z = m;
+                alpha = fmin(alpha, .005f);
+            }else {
+                alpha = visible;
+            }
+        }
+
         col.w = alpha;
 		
         col.w *= c_vrParam.density;
@@ -380,6 +398,35 @@ void init_volume_Cuda(float *h_volume, cudaExtent volumeSize)
 }
 
 extern "C"
+void init_visibility_Cuda(float *h_volume, cudaExtent volumeSize)
+{
+    // create 3D array
+    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
+    checkCudaErrors(cudaMalloc3DArray(&d_visArray, &channelDesc, volumeSize));
+
+    // copy data to 3D array
+    cudaMemcpy3DParms copyParams = {0};
+    copyParams.srcPtr   = make_cudaPitchedPtr(h_volume, volumeSize.width*sizeof(float), volumeSize.width, volumeSize.height);
+    copyParams.dstArray = d_visArray;
+    copyParams.extent   = volumeSize;
+    copyParams.kind     = cudaMemcpyHostToDevice;
+    checkCudaErrors(cudaMemcpy3D(&copyParams));
+
+    // set texture parameters
+    tex_vis.normalized = false;                      // access with normalized texture coordinates
+    tex_vis.filterMode = cudaFilterModeLinear;      // linear interpolation
+    //tex.filterMode = cudaFilterModePoint;
+    tex_vis.channelDesc = channelDesc;
+    tex_vis.addressMode[0] = cudaAddressModeClamp;  // clamp texture coordinates
+    tex_vis.addressMode[1] = cudaAddressModeClamp;
+    tex_vis.addressMode[2] = cudaAddressModeClamp;
+
+    // bind array to 3D texture
+    checkCudaErrors(cudaBindTextureToArray(tex_vis, d_visArray, channelDesc));
+
+}
+
+extern "C"
 void init_normal_Cuda(myvector4 *h_volume, cudaExtent volumeSize)
 {
     // create 3D array
@@ -447,12 +494,15 @@ void TransferFunc(float *transf_color, int num_color, float *transf_alpha, int n
     checkCudaErrors(cudaBindTextureToArray(transferTex_alpha, d_transferFuncArray2, channelDesc3));
 	delete [] t_color;
 }
+
+
 extern "C"
 void freeCudaVolumeBuffers()
 {
     checkCudaErrors(cudaFreeArray(d_volumeArray));
 	checkCudaErrors(cudaFreeArray(d_normalArray));
-    
+    checkCudaErrors(cudaFreeArray(d_visArray));
+
 }
 
 extern "C"
@@ -484,6 +534,7 @@ void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, u
     param.gridScale_Z=gridScale_Z;
     param.tstep=tstep;
     param.maxSteps = 1000;
+    param.visibilityOn = true; // set on for now
     cudaMemcpyToSymbol(c_vrParam, &param, sizeof(RenderParam));
     d_render<<<gridSize, blockSize>>>(d_output);
 }

@@ -7,10 +7,11 @@
 extern "C" void init_volume_Cuda(float *h_volume, cudaExtent volumeSize);
 extern "C" void init_normal_Cuda(myvector4 *h_volume, cudaExtent volumeSize);
 extern "C" void freeCudaVolumeBuffers();
+extern "C" void init_visibility_Cuda(float *h_volume, cudaExtent volumeSize);
 
 uint cuda_width = WINDOW_SIZE, cuda_height = WINDOW_SIZE;
 QGLFormat glFormat;
-Grid g;
+Grid g, h;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -27,9 +28,25 @@ MainWindow::MainWindow(QWidget *parent) :
 	tr1D = NULL;
 	glw = NULL;
     ui->setupUi(this);
+
+    h.data.volume = NULL;
 #if 1
     g.data.volume = read_volume("/data/flow/plume.nhdr", g);
     ui->statusBar->showMessage("Read Data Property Successfully!");
+
+    // create cubic visibility
+    h.data.size = g.xdim*g.ydim*g.zdim;
+    h.data.volume = new float[h.data.size];
+    h.data.xdim = g.xdim;
+    h.data.ydim = g.ydim;
+    {
+        int x,y,z,i=0;
+        for (z=0; z<g.zdim; z++)
+            for (y=0; y<g.ydim; y++)
+                for (x=0; x<g.xdim; x++){
+                    h.data.volume[i++] = z>g.zdim/3 && z<g.zdim*2/3 && y>g.ydim/3 && y<g.ydim*2/3 && x>g.xdim/3 && x<g.xdim*2/3;
+                }
+    }
 #endif
 }
 
@@ -100,9 +117,29 @@ void MainWindow::on_Draw_PushButton_clicked()
 		init_volume_Cuda(g.data.volume, volumeSize);
 		gridSize = dim3(iDivUpM(cuda_width, blockSize.x), iDivUpM(cuda_height, blockSize.y));
 
+        // initialize visibility array in CUDA
+        if (h.data.volume) {
+            init_visibility_Cuda(h.data.volume, volumeSize);
+        }
+
 		glw->updateGL();
 		glw->show();
 
 		
 }
 
+
+void MainWindow::on_actionDistRead_Data_triggered()
+{
+    QString fn = QFileDialog::getOpenFileName(this, tr("Open File"), DataDir, tr("header(*.nhdr)"));
+    ui->statusBar->showMessage("");
+
+    if ( !fn.isEmpty() )
+    {
+        string filename = fn.toStdString();
+        destroy_Grid(h);
+        h.data.volume = read_volume(filename, h);
+
+        ui->statusBar->showMessage("Read Data Property Successfully!");
+    }
+}
