@@ -34,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFILE">
@@ -43,7 +43,14 @@
     </property>
     <addaction name="actionRead_Data"/>
    </widget>
+   <widget class="QMenu" name="menuVisibility">
+    <property name="title">
+     <string>Visibility</string>
+    </property>
+    <addaction name="actionDistRead_Data"/>
+   </widget>
    <addaction name="menuFILE"/>
+   <addaction name="menuVisibility"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -55,6 +62,11 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionRead_Data">
+   <property name="text">
+    <string>Read Data</string>
+   </property>
+  </action>
+  <action name="actionDistRead_Data">
    <property name="text">
     <string>Read Data</string>
    </property>

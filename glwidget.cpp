@@ -83,7 +83,7 @@ extern "C" void freeCudaVolumeBuffers();
 extern "C" void freeCudaTransferFuncBuffers();
 extern "C" void gmm_compute_kernel(dim3 gridSize, dim3 blockSize,int size, float *gmm_V,float *gmm_P, cudaExtent volumeSize, int xdim, int ydim, int zdim, int distib_num);
 
-dim3 blockSize(32, 32);
+dim3 blockSize(16, 16);
 dim3 gridSize;
 
 float maxpos_z;
@@ -1271,7 +1271,7 @@ void GLWidget::paintGL() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0, 0, -zoom, 0, 0, 0, 0, 1, 0);
-    printf("zoom: %f\n", zoom);
+    //printf("zoom: %f\n", zoom);
     //glTranslatef(tx, ty, tz);
     glMultMatrixf(rotation);
     glScalef(scale, scale, scale);
