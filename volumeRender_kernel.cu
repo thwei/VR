@@ -196,10 +196,13 @@ d_render(uint *d_output)
 
         if (c_vrParam.visibilityOn) {
             float visible = tex3D(tex_vis, x, y, z);
+            //alpha = visible;
             if (visible == 0) {
                 float m = (col.x+col.y+col.z)/3.f;  // lightness
                 col.x = col.y = col.z = m;
                 alpha = fmin(alpha, .005f);
+            }else {
+                alpha = visible;
             }
         }
 
