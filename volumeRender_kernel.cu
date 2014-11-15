@@ -531,6 +531,7 @@ void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, uint imageW, u
     param.gridScale_Z=gridScale_Z;
     param.tstep=tstep;
     param.maxSteps = 1000;
+    param.visibilityOn = true; // set on for now
     cudaMemcpyToSymbol(c_vrParam, &param, sizeof(RenderParam));
     d_render<<<gridSize, blockSize>>>(d_output);
 }
